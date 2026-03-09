@@ -53,15 +53,35 @@ body {
 .feeds-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 0;
   margin-top: 24px;
-  align-items: start;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-surface);
 }
 
 .feeds-container > * {
   max-height: 350px;
   display: flex;
   flex-direction: column;
+}
+
+.feeds-container .activity-feed {
+  border-right: 1px solid var(--border);
+  margin-top: 0;
+  border-radius: 0;
+}
+
+.feeds-container .activity-header,
+.feeds-container .comm-header {
+  min-height: 56px;
+}
+
+.feeds-container .activity-list,
+.feeds-container .comm-list {
+  flex: 1;
+  overflow-y: auto;
 }
 
 @media (max-width: 900px) {
