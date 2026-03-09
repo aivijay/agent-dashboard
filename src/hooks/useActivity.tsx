@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { ActivityEvent } from '../types';
 
 const AGENT_EMOJI: Record<string, string> = {
@@ -10,84 +10,112 @@ const AGENT_EMOJI: Record<string, string> = {
   buddy: '🐐',
 };
 
-// Sample activity for demo - in production, this would come from Gateway events
-const generateSampleActivity = (): ActivityEvent[] => [
+// Realistic activity templates
+const activityTemplates = [
+  // Clawe (squad lead)
+  { message: 'Reviewing team progress', agent: 'clawe', type: 'status' as const },
+  { message: 'Assigning task to Inky', agent: 'clawe', type: 'task' as const },
+  { message: 'Checking in on the team 🦞', agent: 'clawe', type: 'status' as const },
+  { message: 'Coordinating with Scout on keywords', agent: 'clawe', type: 'communication' as const },
+  
+  // Inky (content writer)
+  { message: 'Writing blog post draft', agent: 'inky', type: 'task' as const },
+  { message: 'Editing product descriptions', agent: 'inky', type: 'task' as const },
+  { message: 'Creating documentation outline', agent: 'inky', type: 'task' as const },
+  { message: 'Polishing copy for farm store', agent: 'inky', type: 'task' as const },
+  
+  // Pixel (designer)
+  { message: 'Designing hero image', agent: 'pixel', type: 'task' as const },
+  { message: 'Creating social media graphics', agent: 'pixel', type: 'task' as const },
+  { message: 'Working on logo concepts', agent: 'pixel', type: 'task' as const },
+  { message: 'Generating diagrams for blog', agent: 'pixel', type: 'task' as const },
+  
+  // Scout (SEO)
+  { message: 'Researching keywords', agent: 'scout', type: 'task' as const },
+  { message: 'Analyzing search trends', agent: 'scout', type: 'task' as const },
+  { message: 'Optimizing meta descriptions', agent: 'scout', type: 'task' as const },
+  { message: 'Checking competitor rankings', agent: 'scout', type: 'task' as const },
+  
+  // Buddy (mascot)
+  { message: 'Exploring the workspace! 🐐', agent: 'buddy', type: 'status' as const },
+  { message: 'Checking on everyone 💚', agent: 'buddy', type: 'status' as const },
+  { message: 'Found something interesting!', agent: 'buddy', type: 'status' as const },
+  { message: 'Taking a break to eat hay 🌾', agent: 'buddy', type: 'status' as const },
+];
+
+const generateActivity = (): ActivityEvent => {
+  const template = activityTemplates[Math.floor(Math.random() * activityTemplates.length)];
+  return {
+    id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+    timestamp: new Date().toISOString(),
+    agentId: template.agent,
+    agentEmoji: AGENT_EMOJI[template.agent],
+    message: template.message,
+    type: template.type,
+  };
+};
+
+const initialActivity: ActivityEvent[] = [
   {
     id: '1',
-    timestamp: new Date(Date.now() - 60000).toISOString(),
+    timestamp: new Date(Date.now() - 300000).toISOString(),
     agentId: 'clawe',
     agentEmoji: '🦞',
-    message: 'Assigned task to Inky: Write blog post intro',
-    type: 'task',
+    message: 'Good morning team! Ready to tackle today\'s tasks 🦞',
+    type: 'status',
   },
   {
     id: '2',
-    timestamp: new Date(Date.now() - 120000).toISOString(),
+    timestamp: new Date(Date.now() - 240000).toISOString(),
     agentId: 'scout',
     agentEmoji: '🔍',
-    message: 'Researching keywords for "goat care"',
+    message: 'Researching trending keywords for farm content',
     type: 'task',
   },
   {
     id: '3',
     timestamp: new Date(Date.now() - 180000).toISOString(),
-    agentId: 'pixel',
-    agentEmoji: '🎨',
-    message: 'Generating hero image for blog post',
+    agentId: 'inky',
+    agentEmoji: '✍️',
+    message: 'Started drafting new blog post',
     type: 'task',
   },
   {
     id: '4',
-    timestamp: new Date(Date.now() - 240000).toISOString(),
-    agentId: 'buddy',
-    agentEmoji: '🐐',
-    message: 'Checking in on the team! 💚',
-    type: 'status',
+    timestamp: new Date(Date.now() - 120000).toISOString(),
+    agentId: 'pixel',
+    agentEmoji: '🎨',
+    message: 'Creating visuals for the new blog post',
+    type: 'task',
   },
   {
     id: '5',
-    timestamp: new Date(Date.now() - 300000).toISOString(),
-    agentId: 'inky',
-    agentEmoji: '✍️',
-    message: 'Completed: Product description for farm store',
-    type: 'task',
+    timestamp: new Date(Date.now() - 60000).toISOString(),
+    agentId: 'buddy',
+    agentEmoji: '🐐',
+    message: 'Hey everyone! Checking in! 💚',
+    type: 'status',
   },
 ];
 
 export function useActivity() {
-  const [events, setEvents] = useState<ActivityEvent[]>([]);
-  const [isConnected, setIsConnected] = useState(false);
+  const [events, setEvents] = useState<ActivityEvent[]>(initialActivity);
 
   useEffect(() => {
-    // Load initial sample data
-    setEvents(generateSampleActivity());
-    setIsConnected(true);
-
-    // In production, this would connect to a real-time event source
-    // For now, we'll just update with some variety occasionally
-    const interval = setInterval(() => {
-      const activityTypes = [
-        { message: 'Working on content draft', agent: ['inky', 'scout', 'pixel'][Math.floor(Math.random() * 3)] },
-        { message: 'Reviewing team progress', agent: 'clawe' },
-        { message: 'Exploring new ideas! 🐐', agent: 'buddy' },
-      ];
-      const random = activityTypes[Math.floor(Math.random() * activityTypes.length)];
-      const newEvent: ActivityEvent = {
-        id: Date.now().toString(),
-        timestamp: new Date().toISOString(),
-        agentId: random.agent,
-        agentEmoji: AGENT_EMOJI[random.agent],
-        message: random.message,
-        type: 'task',
-      };
-      
+    // Add new activity every 10-20 seconds
+    const addActivity = () => {
+      const newEvent = generateActivity();
       setEvents(prev => [newEvent, ...prev].slice(0, 50));
-    }, 15000);
+    };
+
+    const interval = setInterval(() => {
+      addActivity();
+    }, 10000 + Math.random() * 10000);
 
     return () => clearInterval(interval);
   }, []);
 
-  return { events, isConnected };
+  return { events };
 }
 
 interface ActivityFeedProps {
@@ -95,8 +123,6 @@ interface ActivityFeedProps {
 }
 
 export function ActivityFeed({ events }: ActivityFeedProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
   return (
     <div className="activity-feed">
       <div className="activity-header">
@@ -104,12 +130,12 @@ export function ActivityFeed({ events }: ActivityFeedProps) {
         <span className="activity-count">{events.length} events</span>
       </div>
       
-      <div className="activity-list" ref={containerRef}>
+      <div className="activity-list">
         {events.length === 0 ? (
           <div className="activity-empty">No activity yet</div>
         ) : (
           events.map((event) => (
-            <div key={event.id} className="activity-item">
+            <div key={event.id} className={`activity-item activity-${event.type}`}>
               <span className="activity-emoji">{event.agentEmoji}</span>
               <div className="activity-content">
                 <span className="activity-message">{event.message}</span>
@@ -117,7 +143,6 @@ export function ActivityFeed({ events }: ActivityFeedProps) {
                   {new Date(event.timestamp).toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit',
-                    second: '2-digit',
                     hour12: false,
                   })}
                 </span>
