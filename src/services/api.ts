@@ -1,9 +1,9 @@
 import { AgentSession, GatewayStatus } from '../types';
 
-// Use Vite proxy for local dev, direct for production
+// Use proxy for local dev, direct for production
 const API_BASE = import.meta.env.PROD 
   ? 'http://localhost:18790' 
-  : '';
+  : '/agent-api';
 
 export async function checkGatewayHealth(): Promise<GatewayStatus> {
   try {

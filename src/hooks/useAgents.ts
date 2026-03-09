@@ -11,44 +11,8 @@ const AGENT_CONFIG: Record<string, { name: string; emoji: string; role: string; 
   buddy: { name: 'Buddy', emoji: '🐐', role: 'Team Mascot', accentColor: '#06d6a0' },
 };
 
-const agentTasks: Record<string, { idle: string; working: string[] }> = {
-  main: {
-    idle: 'Ready to help',
-    working: ['Processing your request...', 'Researching information...', 'Working on code...', 'Reading files...']
-  },
-  clawe: {
-    idle: 'Coordinating the team',
-    working: ['Reviewing task assignments...', 'Checking team progress...', 'Planning next steps...', 'Delegating work...']
-  },
-  inky: {
-    idle: 'Ready to write',
-    working: ['Drafting blog post...', 'Writing product copy...', 'Editing documentation...', 'Creating content outline...']
-  },
-  pixel: {
-    idle: 'Ready to design',
-    working: ['Generating hero image...', 'Designing graphics...', 'Creating diagram...', 'Editing visual assets...']
-  },
-  scout: {
-    idle: 'Researching keywords',
-    working: ['Analyzing search trends...', 'Checking keyword rankings...', 'Researching competitors...', 'Optimizing content...']
-  },
-  buddy: {
-    idle: 'Exploring around! 🐐',
-    working: ['Found something interesting!', 'Checking the workspace...', 'Looking for adventures!', 'Making new discoveries!']
-  },
-};
-
-function getAgentActivity(agentId: string): { status: AgentStatus; task: string } {
-  const config = agentTasks[agentId] || agentTasks.main;
-  const isWorking = Math.random() > 0.6;
-  
-  return {
-    status: isWorking ? 'working' : 'idle',
-    task: isWorking 
-      ? config.working[Math.floor(Math.random() * config.working.length)]
-      : config.idle
-  };
-}
+// Demo data when API is not available
+const DEMO_MODE = false; // Set to true for demo mode, false for real API
 
 function timeAgo(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000);
@@ -64,6 +28,22 @@ export function useAgents() {
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   const fetchAgents = useCallback(async () => {
+    // In demo mode, skip API calls and use simulated data
+    if (DEMO_MODE) {
+      const agentList: Agent[] = Object.entries(AGENT_CONFIG).map(([id, config]) => ({
+        id,
+        ...config,
+        status: Math.random() > 0.5 ? 'working' : 'idle' as AgentStatus,
+        currentTask: 'Ready',
+        lastActivity: 'Just now',
+      }));
+      setAgents(agentList);
+      setConnected(true);
+      setLastRefresh(new Date());
+      return;
+    }
+
+    // Real API mode
     const health = await checkGatewayHealth();
     setConnected(health.ok);
 
@@ -79,35 +59,52 @@ export function useAgents() {
       return;
     }
 
-    // Get real agent data from API
-    const detailRes = await listAgentsDetail();
-    const agentDetailMap = new Map(detailRes.agents.map(a => [a.id, a]));
+    try {
+      const detailRes = await listAgentsDetail();
+      const agentDetailMap = new Map(detailRes.agents.map(a => [a.id, a]));
 
-    const agentList: Agent[] = Object.entries(AGENT_CONFIG).map(([id, config]) => {
-      const detail = agentDetailMap.get(id);
-      const activity = getAgentActivity(id);
-      
-      let status: AgentStatus = 'online';
-      if (detail?.hasSessions) {
-        status = Math.random() > 0.5 ? 'working' : 'idle';
-      }
-      
-      return {
+      const agentList: Agent[] = Object.entries(AGENT_CONFIG).map(([id, config]) => {
+        const detail = agentDetailMap.get(id);
+        
+        // Show "Working" only if activity was recent (<5 min)
+        const isRecent = detail?.lastSessionAt && (Date.now() - detail.lastSessionAt) < 5 * 60 * 1000;
+        
+        let status: AgentStatus = 'online';
+        if (detail?.hasSessions && isRecent) {
+          status = 'working';
+        } else if (detail?.hasSessions) {
+          status = 'idle';
+        }
+        
+        return {
+          id,
+          ...config,
+          status,
+          currentTask: status === 'working' ? 'Active session' : 'Ready',
+          lastActivity: detail?.lastSessionAt ? timeAgo(detail.lastSessionAt) : undefined,
+        };
+      });
+
+      setAgents(agentList);
+    } catch (e) {
+      console.error('Error fetching agents:', e);
+      const offlineAgents = Object.entries(AGENT_CONFIG).map(([id, config]) => ({
         id,
         ...config,
-        status,
-        currentTask: status === 'working' ? activity.task : 'Ready',
-        lastActivity: detail?.lastSessionAt ? timeAgo(detail.lastSessionAt) : undefined,
-      };
-    });
+        status: 'offline' as AgentStatus,
+        currentTask: undefined,
+        lastActivity: undefined,
+      }));
+      setAgents(offlineAgents);
+    }
 
-    setAgents(agentList);
     setLastRefresh(new Date());
   }, []);
 
   useEffect(() => {
     fetchAgents();
-    const interval = setInterval(fetchAgents, 5000);
+    // Refresh every 10 seconds for real status updates
+    const interval = setInterval(fetchAgents, 10000);
     return () => clearInterval(interval);
   }, [fetchAgents]);
 
