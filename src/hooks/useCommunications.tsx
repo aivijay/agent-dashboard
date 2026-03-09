@@ -16,62 +16,59 @@ export interface Communication {
   message: string;
 }
 
-// Real communication samples that mimic agent interactions
-const communicationSamples: Omit<Communication, 'id' | 'timestamp'>[] = [
-  {
-    from: { id: 'clawe', name: 'Clawe', emoji: '🦞' },
-    to: { id: 'inky', name: 'Inky', emoji: '✍️' },
-    message: 'Hey Inky, can you write a intro for the new blog post about goat care?',
-  },
-  {
-    from: { id: 'inky', name: 'Inky', emoji: '✍️' },
-    to: { id: 'clawe', name: 'Clawe', emoji: '🦞' },
-    message: 'Sure thing! I\'ll have a draft ready in a bit. What tone are we going for?',
-  },
-  {
-    from: { id: 'scout', name: 'Scout', emoji: '🔍' },
-    to: { id: 'clawe', name: 'Clawe', emoji: '🦞' },
-    message: 'Found some good keywords for the farm store page. Sending them over now.',
-  },
-  {
-    from: { id: 'clawe', name: 'Clawe', emoji: '🦞' },
-    to: { id: 'pixel', name: 'Pixel', emoji: '🎨' },
-    message: 'We need a hero image for the blog. Can you create something with goats?',
-  },
-  {
-    from: { id: 'pixel', name: 'Pixel', emoji: '🎨' },
-    to: { id: 'clawe', name: 'Clawe', emoji: '🦞' },
-    message: 'On it! I\'ll make something warm and inviting. Farm vibes 🌾',
-  },
-  {
-    from: { id: 'buddy', name: 'Buddy', emoji: '🐐' },
-    to: { id: 'clawe', name: 'Clawe', emoji: '🦞' },
-    message: 'Hi Clawe! Is there anything I can help with? I\'m ready to explore! 🐐',
-  },
-  {
-    from: { id: 'clawe', name: 'Clawe', emoji: '🦞' },
-    to: { id: 'buddy', name: 'Buddy', emoji: '🐐' },
-    message: 'Hey Buddy! How about you check the workspace and let us know what you find?',
-  },
-  {
-    from: { id: 'buddy', name: 'Buddy', emoji: '🐐' },
-    to: { id: 'scout', name: 'Scout', emoji: '🔍' },
-    message: 'Scout! Look what I found! It smells interesting! 🐐',
-  },
-  {
-    from: { id: 'scout', name: 'Scout', emoji: '🔍' },
-    to: { id: 'buddy', name: 'Buddy', emoji: '🐐' },
-    message: 'Nice find, Buddy! That could be useful. Good eye! 👀',
-  },
-  {
-    from: { id: 'inky', name: 'Inky', emoji: '✍️' },
-    to: { id: 'pixel', name: 'Pixel', emoji: '🎨' },
-    message: 'Hey Pixel, the blog post is ready. Let me know when you want the final copy!',
-  },
+// Communication templates based on agent relationships
+const communicationTemplates = [
+  // Clawe (squad lead) communicating with team
+  { from: 'clawe', to: 'inky', message: 'Hey Inky, can you write the intro for our new blog post?' },
+  { from: 'clawe', to: 'pixel', message: 'We need a hero image for the blog. Can you create something with goats?' },
+  { from: 'clawe', to: 'scout', message: 'Scout, what keywords are trending for farm content?' },
+  { from: 'clawe', to: 'buddy', message: 'Hey Buddy! How about you check the workspace and let us know what you find?' },
+  
+  // Team responses to Clawe
+  { from: 'inky', to: 'clawe', message: 'Sure thing! I\'ll have a draft ready in a bit.' },
+  { from: 'pixel', to: 'clawe', message: 'On it! I\'ll make something warm and inviting. Farm vibes 🌾' },
+  { from: 'scout', to: 'clawe', message: 'Found some good keywords for the farm store page. Sending them over now.' },
+  { from: 'buddy', to: 'clawe', message: 'Hi Clawe! Is there anything I can help with? I\'m ready to explore! 🐐' },
+  
+  // Buddy being Buddy
+  { from: 'buddy', to: 'scout', message: 'Scout! Look what I found! It smells interesting! 🐐' },
+  { from: 'buddy', to: 'inky', message: 'Inky! Are you writing something cool? Can I help? 🐐' },
+  { from: 'buddy', to: 'pixel', message: 'Pixel! I found some pretty colors! Maybe for a picture?' },
+  
+  // Scout working with team
+  { from: 'scout', to: 'inky', message: 'Inky, I found great keywords for your article. Check them out!' },
+  { from: 'scout', to: 'pixel', message: 'Hey Pixel, make sure to add alt text with keywords to your images!' },
+  
+  // Pixel collaborating
+  { from: 'pixel', to: 'inky', message: 'Hey Inky, the blog post is ready. Let me know when you want the final copy!' },
+  { from: 'pixel', to: 'scout', message: 'Scout, I need some keywords for the image I\'m creating!' },
 ];
 
+const AGENT_INFO: Record<string, { name: string; emoji: string }> = {
+  main: { name: 'Plop', emoji: '👋' },
+  clawe: { name: 'Clawe', emoji: '🦞' },
+  inky: { name: 'Inky', emoji: '✍️' },
+  pixel: { name: 'Pixel', emoji: '🎨' },
+  scout: { name: 'Scout', emoji: '🔍' },
+  buddy: { name: 'Buddy', emoji: '🐐' },
+};
+
+// Generate initial communications
+const generateInitialCommunications = (): Communication[] => {
+  const now = Date.now();
+  const shuffled = [...communicationTemplates].sort(() => Math.random() - 0.5);
+  
+  return shuffled.slice(0, 6).map((c, i) => ({
+    id: `init-${i}`,
+    timestamp: new Date(now - i * 90000 - Math.random() * 30000).toISOString(),
+    from: { id: c.from, ...AGENT_INFO[c.from] },
+    to: { id: c.to, ...AGENT_INFO[c.to] },
+    message: c.message,
+  })).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+};
+
 export function useCommunications() {
-  const [communications, setCommunications] = useState<Communication[]>([]);
+  const [communications, setCommunications] = useState<Communication[]>(generateInitialCommunications);
 
   // Function to add new communication from outside
   const addCommunication = (comm: Communication) => {
@@ -79,28 +76,26 @@ export function useCommunications() {
   };
 
   useEffect(() => {
-    // Generate initial communications
-    const initial = communicationSamples.slice(0, 5).map((c, i) => ({
-      ...c,
-      id: `comm-${i}`,
-      timestamp: new Date(Date.now() - (5 - i) * 60000).toISOString(),
-    }));
-    setCommunications(initial);
-
     // Add new communication occasionally
-    const addCommunication = () => {
-      const template = communicationSamples[Math.floor(Math.random() * communicationSamples.length)];
+    const addComm = () => {
+      const template = communicationTemplates[Math.floor(Math.random() * communicationTemplates.length)];
+      
       const newComm: Communication = {
-        ...template,
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         timestamp: new Date().toISOString(),
+        from: { id: template.from, ...AGENT_INFO[template.from] },
+        to: { id: template.to, ...AGENT_INFO[template.to] },
+        message: template.message,
       };
+      
       setCommunications(prev => [newComm, ...prev].slice(0, 30));
     };
 
     const interval = setInterval(() => {
-      if (Math.random() > 0.5) addCommunication();
-    }, 15000);
+      if (Math.random() > 0.5) { // 50% chance to add communication
+        addComm();
+      }
+    }, 15000 + Math.random() * 10000);
 
     return () => clearInterval(interval);
   }, []);

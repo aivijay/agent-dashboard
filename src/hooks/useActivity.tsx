@@ -10,107 +10,100 @@ const AGENT_EMOJI: Record<string, string> = {
   buddy: '🐐',
 };
 
-// Realistic activity templates
-const activityTemplates = [
-  // Clawe (squad lead)
-  { message: 'Reviewing team progress', agent: 'clawe', type: 'status' as const },
-  { message: 'Assigning task to Inky', agent: 'clawe', type: 'task' as const },
-  { message: 'Checking in on the team 🦞', agent: 'clawe', type: 'status' as const },
-  { message: 'Coordinating with Scout on keywords', agent: 'clawe', type: 'communication' as const },
-  
-  // Inky (content writer)
-  { message: 'Writing blog post draft', agent: 'inky', type: 'task' as const },
-  { message: 'Editing product descriptions', agent: 'inky', type: 'task' as const },
-  { message: 'Creating documentation outline', agent: 'inky', type: 'task' as const },
-  { message: 'Polishing copy for farm store', agent: 'inky', type: 'task' as const },
-  
-  // Pixel (designer)
-  { message: 'Designing hero image', agent: 'pixel', type: 'task' as const },
-  { message: 'Creating social media graphics', agent: 'pixel', type: 'task' as const },
-  { message: 'Working on logo concepts', agent: 'pixel', type: 'task' as const },
-  { message: 'Generating diagrams for blog', agent: 'pixel', type: 'task' as const },
-  
-  // Scout (SEO)
-  { message: 'Researching keywords', agent: 'scout', type: 'task' as const },
-  { message: 'Analyzing search trends', agent: 'scout', type: 'task' as const },
-  { message: 'Optimizing meta descriptions', agent: 'scout', type: 'task' as const },
-  { message: 'Checking competitor rankings', agent: 'scout', type: 'task' as const },
-  
-  // Buddy (mascot)
-  { message: 'Exploring the workspace! 🐐', agent: 'buddy', type: 'status' as const },
-  { message: 'Checking on everyone 💚', agent: 'buddy', type: 'status' as const },
-  { message: 'Found something interesting!', agent: 'buddy', type: 'status' as const },
-  { message: 'Taking a break to eat hay 🌾', agent: 'buddy', type: 'status' as const },
-];
-
-const generateActivity = (): ActivityEvent => {
-  const template = activityTemplates[Math.floor(Math.random() * activityTemplates.length)];
-  return {
-    id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-    timestamp: new Date().toISOString(),
-    agentId: template.agent,
-    agentEmoji: AGENT_EMOJI[template.agent],
-    message: template.message,
-    type: template.type,
-  };
+// Activity templates based on agent roles
+const activityTemplates = {
+  main: [
+    { message: 'Processing your request', type: 'task' as const },
+    { message: 'Reading and analyzing files', type: 'task' as const },
+    { message: 'Running a command', type: 'task' as const },
+    { message: 'Researching information', type: 'task' as const },
+    { message: 'Ready to help!', type: 'status' as const },
+  ],
+  clawe: [
+    { message: 'Reviewing team progress', type: 'status' as const },
+    { message: 'Assigning tasks to specialists', type: 'communication' as const },
+    { message: 'Coordinating with the team', type: 'task' as const },
+    { message: 'Planning next steps', type: 'task' as const },
+    { message: 'Checking in on everyone 🦞', type: 'status' as const },
+  ],
+  inky: [
+    { message: 'Writing a blog post', type: 'task' as const },
+    { message: 'Drafting product descriptions', type: 'task' as const },
+    { message: 'Creating documentation', type: 'task' as const },
+    { message: 'Editing and polishing copy', type: 'task' as const },
+    { message: 'Working on content strategy', type: 'task' as const },
+  ],
+  pixel: [
+    { message: 'Designing a hero image', type: 'task' as const },
+    { message: 'Creating social graphics', type: 'task' as const },
+    { message: 'Generating diagrams', type: 'task' as const },
+    { message: 'Editing visual assets', type: 'task' as const },
+    { message: 'Working on logo concepts', type: 'task' as const },
+  ],
+  scout: [
+    { message: 'Researching keywords', type: 'task' as const },
+    { message: 'Analyzing search trends', type: 'task' as const },
+    { message: 'Checking competitor rankings', type: 'task' as const },
+    { message: 'Optimizing meta descriptions', type: 'task' as const },
+    { message: 'SEO audit in progress', type: 'task' as const },
+  ],
+  buddy: [
+    { message: 'Exploring the workspace! 🐐', type: 'status' as const },
+    { message: 'Found something interesting!', type: 'status' as const },
+    { message: 'Checking on the team 💚', type: 'status' as const },
+    { message: 'Taking a break to eat hay 🌾', type: 'status' as const },
+    { message: 'Having an adventure!', type: 'status' as const },
+  ],
 };
 
-const initialActivity: ActivityEvent[] = [
-  {
-    id: '1',
-    timestamp: new Date(Date.now() - 300000).toISOString(),
-    agentId: 'clawe',
-    agentEmoji: '🦞',
-    message: 'Good morning team! Ready to tackle today\'s tasks 🦞',
-    type: 'status',
-  },
-  {
-    id: '2',
-    timestamp: new Date(Date.now() - 240000).toISOString(),
-    agentId: 'scout',
-    agentEmoji: '🔍',
-    message: 'Researching trending keywords for farm content',
-    type: 'task',
-  },
-  {
-    id: '3',
-    timestamp: new Date(Date.now() - 180000).toISOString(),
-    agentId: 'inky',
-    agentEmoji: '✍️',
-    message: 'Started drafting new blog post',
-    type: 'task',
-  },
-  {
-    id: '4',
-    timestamp: new Date(Date.now() - 120000).toISOString(),
-    agentId: 'pixel',
-    agentEmoji: '🎨',
-    message: 'Creating visuals for the new blog post',
-    type: 'task',
-  },
-  {
-    id: '5',
-    timestamp: new Date(Date.now() - 60000).toISOString(),
-    agentId: 'buddy',
-    agentEmoji: '🐐',
-    message: 'Hey everyone! Checking in! 💚',
-    type: 'status',
-  },
-];
+// Generate initial activities
+const generateInitialActivities = (): ActivityEvent[] => {
+  const now = Date.now();
+  const agents = Object.keys(AGENT_EMOJI);
+  
+  return agents.map((agentId, index) => {
+    const templates = activityTemplates[agentId as keyof typeof activityTemplates] || activityTemplates.main;
+    const template = templates[Math.floor(Math.random() * templates.length)];
+    
+    return {
+      id: `init-${index}`,
+      timestamp: new Date(now - index * 60000 - Math.random() * 30000).toISOString(),
+      agentId,
+      agentEmoji: AGENT_EMOJI[agentId],
+      message: template.message,
+      type: template.type,
+    };
+  }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+};
 
 export function useActivity() {
-  const [events, setEvents] = useState<ActivityEvent[]>(initialActivity);
+  const [events, setEvents] = useState<ActivityEvent[]>(generateInitialActivities);
 
   useEffect(() => {
-    // Add new activity every 10-20 seconds
+    // Add new activity occasionally (every 8-15 seconds)
     const addActivity = () => {
-      const newEvent = generateActivity();
+      const agents = Object.keys(AGENT_EMOJI);
+      const agentId = agents[Math.floor(Math.random() * agents.length)];
+      const templates = activityTemplates[agentId as keyof typeof activityTemplates] || activityTemplates.main;
+      const template = templates[Math.floor(Math.random() * templates.length)];
+
+      const newEvent: ActivityEvent = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: new Date().toISOString(),
+        agentId,
+        agentEmoji: AGENT_EMOJI[agentId],
+        message: template.message,
+        type: template.type,
+      };
+      
       setEvents(prev => [newEvent, ...prev].slice(0, 50));
     };
 
     const interval = setInterval(() => {
-      addActivity();
-    }, 10000 + Math.random() * 10000);
+      if (Math.random() > 0.4) { // 60% chance to add activity
+        addActivity();
+      }
+    }, 8000 + Math.random() * 7000);
 
     return () => clearInterval(interval);
   }, []);
