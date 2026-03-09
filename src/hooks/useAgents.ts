@@ -61,27 +61,38 @@ export function useAgents() {
 
     try {
       const detailRes = await listAgentsDetail();
-      const agentDetailMap = new Map(detailRes.agents.map(a => [a.id, a]));
+      const detailMap = new Map(detailRes.agents.map(a => [a.id, a]));
 
       const agentList: Agent[] = Object.entries(AGENT_CONFIG).map(([id, config]) => {
-        const detail = agentDetailMap.get(id);
+        const detail = detailMap.get(id);
         
-        // Show "Working" only if activity was recent (<5 min)
-        const isRecent = detail?.lastSessionAt && (Date.now() - detail.lastSessionAt) < 5 * 60 * 1000;
+        // API returns: 'active', 'idle', or 'offline'
+        // Map to frontend status: 'working' (active), 'idle', 'offline'
+        let status: AgentStatus = 'offline';
+        if (detail) {
+          if (detail.status === 'active') {
+            status = 'working';
+          } else if (detail.status === 'idle') {
+            status = 'idle';
+          } else {
+            status = 'offline';
+          }
+        }
         
-        let status: AgentStatus = 'online';
-        if (detail?.hasSessions && isRecent) {
-          status = 'working';
-        } else if (detail?.hasSessions) {
-          status = 'idle';
+        // Get current task based on status
+        let currentTask: string | undefined;
+        if (status === 'working') {
+          currentTask = 'Active session';
+        } else if (status === 'idle') {
+          currentTask = 'Ready';
         }
         
         return {
           id,
           ...config,
           status,
-          currentTask: status === 'working' ? 'Active session' : 'Ready',
-          lastActivity: detail?.lastSessionAt ? timeAgo(detail.lastSessionAt) : undefined,
+          currentTask,
+          lastActivity: detail?.lastActivityAt ? timeAgo(detail.lastActivityAt) : (detail?.lastSessionAt ? timeAgo(detail.lastSessionAt) : undefined),
         };
       });
 

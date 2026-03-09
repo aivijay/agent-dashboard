@@ -47,7 +47,8 @@ export interface AgentDetail {
   role: string;
   hasSessions: boolean;
   lastSessionAt: number | null;
-  status: 'active' | 'idle';
+  lastActivityAt: number | null;
+  status: 'active' | 'idle' | 'offline';
 }
 
 export async function listAgentsDetail(): Promise<{ agents: AgentDetail[] }> {
