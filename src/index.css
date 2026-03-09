@@ -55,18 +55,13 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   margin-top: 24px;
+  align-items: start;
 }
 
 .feeds-container > * {
   max-height: 350px;
   display: flex;
   flex-direction: column;
-}
-
-.feeds-container .activity-list,
-.feeds-container .comm-list {
-  flex: 1;
-  overflow-y: auto;
 }
 
 @media (max-width: 900px) {
