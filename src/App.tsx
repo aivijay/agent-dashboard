@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { AgentGrid } from './components/AgentGrid';
 import { ActivityFeed } from './hooks/useActivity';
 import { CommunicationTimeline } from './hooks/useCommunications';
+import { QuickActions } from './components/QuickActions';
 
 export default function App() {
   const { agents, connected, lastRefresh, refresh } = useAgents();
@@ -27,6 +28,8 @@ export default function App() {
           <CommunicationTimeline communications={communications} />
         </div>
       </main>
+
+      <QuickActions agents={agents} />
 
       <footer className="footer">
         <p>Squad Vision — Agent Dashboard v1.0</p>
