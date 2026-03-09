@@ -33,3 +33,19 @@ export interface GatewayStatus {
   ok: boolean;
   status: string;
 }
+
+export interface Communication {
+  id: string;
+  timestamp: string;
+  from: {
+    id: string;
+    name: string;
+    emoji: string;
+  };
+  to: {
+    id: string;
+    name: string;
+    emoji: string;
+  };
+  message: string;
+}

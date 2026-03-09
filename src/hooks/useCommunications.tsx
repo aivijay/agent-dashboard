@@ -73,6 +73,11 @@ const communicationSamples: Omit<Communication, 'id' | 'timestamp'>[] = [
 export function useCommunications() {
   const [communications, setCommunications] = useState<Communication[]>([]);
 
+  // Function to add new communication from outside
+  const addCommunication = (comm: Communication) => {
+    setCommunications(prev => [comm, ...prev].slice(0, 30));
+  };
+
   useEffect(() => {
     // Generate initial communications
     const initial = communicationSamples.slice(0, 5).map((c, i) => ({
@@ -100,7 +105,7 @@ export function useCommunications() {
     return () => clearInterval(interval);
   }, []);
 
-  return { communications };
+  return { communications, addCommunication };
 }
 
 interface CommunicationTimelineProps {

@@ -1,24 +1,44 @@
 import { useState } from 'react';
 import { Agent } from '../types';
+import { useToast } from '../hooks/useToast';
 
 interface QuickActionsProps {
   agents: Agent[];
+  onSendMessage: (agent: Agent, message: string) => void;
 }
 
-export function QuickActions({ agents }: QuickActionsProps) {
+export function QuickActions({ agents, onSendMessage }: QuickActionsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [message, setMessage] = useState('');
+  const [mode, setMode] = useState<'command' | 'chat'>('command');
   const [sent, setSent] = useState(false);
+  const { addToast } = useToast();
 
   const handleSend = () => {
     if (!message.trim() || !selectedAgent) return;
+
+    // Send message
+    onSendMessage(selectedAgent, message);
+
+    // Show toast
+    addToast({
+      message: `Message sent to ${selectedAgent.name}`,
+      type: 'success',
+      from: { name: 'You', emoji: '👤' }
+    });
+
     setSent(true);
     setTimeout(() => {
-      setIsOpen(false);
-      setSelectedAgent(null);
-      setMessage('');
-      setSent(false);
+      if (mode === 'command') {
+        setIsOpen(false);
+        setSelectedAgent(null);
+        setMessage('');
+        setSent(false);
+      } else {
+        setMessage('');
+        setSent(false);
+      }
     }, 1500);
   };
 
@@ -37,14 +57,34 @@ export function QuickActions({ agents }: QuickActionsProps) {
             </div>
 
             <div className="modal-body">
-              {sent ? (
+              {sent && mode === 'command' ? (
                 <div className="sent-confirmation">
                   <span className="sent-emoji">✅</span>
                   <p>Message sent to {selectedAgent?.name}!</p>
                 </div>
               ) : (
                 <>
-                  <p className="modal-prompt">Select an agent and type your message:</p>
+                  {/* Mode Toggle */}
+                  <div className="mode-toggle">
+                    <button
+                      className={`mode-btn ${mode === 'command' ? 'active' : ''}`}
+                      onClick={() => setMode('command')}
+                    >
+                      ⚡ Quick Command
+                    </button>
+                    <button
+                      className={`mode-btn ${mode === 'chat' ? 'active' : ''}`}
+                      onClick={() => setMode('chat')}
+                    >
+                      💬 Start Chat
+                    </button>
+                  </div>
+
+                  <p className="modal-prompt">
+                    {mode === 'command' 
+                      ? 'Send a quick command to an agent:' 
+                      : 'Start a conversation with an agent:'}
+                  </p>
                   
                   <div className="agent-select">
                     {agents.map((agent) => (
@@ -61,10 +101,12 @@ export function QuickActions({ agents }: QuickActionsProps) {
 
                   <textarea
                     className="message-input"
-                    placeholder="Type your message..."
+                    placeholder={mode === 'command' 
+                      ? 'Type your command...' 
+                      : 'Type your message...'}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    rows={4}
+                    rows={mode === 'chat' ? 6 : 4}
                   />
 
                   <button
@@ -72,7 +114,7 @@ export function QuickActions({ agents }: QuickActionsProps) {
                     onClick={handleSend}
                     disabled={!selectedAgent || !message.trim()}
                   >
-                    Send Message
+                    {mode === 'command' ? 'Send Command' : 'Start Chat'}
                   </button>
                 </>
               )}
