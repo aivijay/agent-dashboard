@@ -71,6 +71,14 @@ body {
   border-right: 1px solid var(--border);
   margin-top: 0;
   border-radius: 0;
+  border-left: none;
+  border-top: none;
+  border-bottom: none;
+}
+
+.feeds-container .comm-feed {
+  border-radius: 0;
+  border: none;
 }
 
 .feeds-container .activity-header,
