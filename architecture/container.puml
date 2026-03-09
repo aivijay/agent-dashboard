@@ -1,0 +1,28 @@
+@startuml Container
+!theme plain
+skinparam backgroundColor #f8f9fa
+
+title Agent Dashboard - Container Diagram
+
+actor Vijay as "Vijay" #4cc9f0
+
+Container_Boundary(dashboard, "Squad Vision Dashboard") {
+    Container(react_app, "React App", "React 18, TypeScript", "Main web application")
+    Container(components, "UI Components", "React Components", "AgentCard, AgentGrid, ActivityFeed, Header")
+    Container(hooks, "Custom Hooks", "React Hooks", "useAgents, useActivity")
+    Container(services, "API Client", "TypeScript", "Gateway API communication")
+}
+
+Container_Boundary(openclaw, "OpenClaw Gateway") {
+    Container(gateway_api, "Gateway REST API", "Express/Hono", "HTTP endpoints for sessions, agents")
+    Container(agent_sessions, "Session Store", "JSON files", "Agent session history")
+    Container(agent_runtime, "Agent Runtime", "Ollama/LLM", "Running agent instances")
+}
+
+Rel(vijay, react_app, "Views dashboard", "HTTP")
+Rel(react_app, services, "Uses")
+Rel(services, gateway_api, "Fetches data", "HTTP/REST")
+Rel(gateway_api, agent_sessions, "Reads/Writes")
+Rel(gateway_api, agent_runtime, "Manages agents")
+
+@enduml

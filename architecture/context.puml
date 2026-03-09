@@ -1,0 +1,22 @@
+@startuml Context
+!theme plain
+skinparam backgroundColor #f8f9fa
+
+title Agent Dashboard - System Context Diagram
+
+actor Vijay as "Vijay (User)" #4cc9f0
+
+System_Boundary(dashboard, "Squad Vision Dashboard") {
+    System(agent_dashboard, "Agent Dashboard App", "React webapp displaying agent status, activity feed, and team communication in real-time")
+}
+
+System_Boundary(openclaw, "OpenClaw Platform") {
+    System(gateway, "Gateway API", "REST API providing agent sessions, status, and subagent run history")
+    System(agents, "Agent System", "Multi-agent system: Plop, Clawe, Inky, Pixel, Scout, Buddy")
+}
+
+Rel(Vijay, agent_dashboard, "Views dashboard", "HTTP")
+Rel(agent_dashboard, gateway, "Fetches agent data", "HTTP/REST")
+Rel(gateway, agents, "Manages & routes")
+
+@enduml
