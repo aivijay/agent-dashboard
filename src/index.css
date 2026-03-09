@@ -57,6 +57,18 @@ body {
   margin-top: 24px;
 }
 
+.feeds-container > * {
+  max-height: 350px;
+  display: flex;
+  flex-direction: column;
+}
+
+.feeds-container .activity-list,
+.feeds-container .comm-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
 @media (max-width: 900px) {
   .feeds-container {
     grid-template-columns: 1fr;
@@ -299,7 +311,7 @@ body {
 }
 
 .activity-list {
-  max-height: 300px;
+  flex: 1;
   overflow-y: auto;
   padding: 8px;
 }
@@ -419,7 +431,7 @@ body {
 }
 
 .comm-list {
-  max-height: 300px;
+  flex: 1;
   overflow-y: auto;
   padding: 8px;
 }
