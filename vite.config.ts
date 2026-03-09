@@ -7,6 +7,7 @@ export default defineConfig({
     port: 5173,
     host: true,
     proxy: {
+      // OpenClaw Gateway (port 18789)
       '/api': {
         target: 'http://127.0.0.1:18789',
         changeOrigin: true,
@@ -15,6 +16,12 @@ export default defineConfig({
       '/health': {
         target: 'http://127.0.0.1:18789',
         changeOrigin: true
+      },
+      // Agent Dashboard API (port 18790)
+      '/agent-api': {
+        target: 'http://127.0.0.1:18790',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/agent-api/, '')
       }
     }
   }
