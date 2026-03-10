@@ -20,7 +20,7 @@ export default function App() {
     // Add the outgoing message to communication feed
     const newComm: Communication = {
       id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
+      timestamp: Date.now(),
       from: { id: 'vijay', name: 'Vijay', emoji: '👤' },
       to: { id: agent.id, name: agent.name, emoji: agent.emoji },
       message: message,
@@ -41,7 +41,7 @@ export default function App() {
       
       const responseComm: Communication = {
         id: (Date.now() + 1).toString(),
-        timestamp: new Date().toISOString(),
+        timestamp: Date.now(),
         from: { id: agent.id, name: agent.name, emoji: agent.emoji },
         to: { id: 'vijay', name: 'Vijay', emoji: '👤' },
         message: responseMsg,

@@ -61,3 +61,31 @@ export async function listAgentsDetail(): Promise<{ agents: AgentDetail[] }> {
     return { agents: [] };
   }
 }
+
+export interface Communication {
+  id: string;
+  timestamp: string | number;
+  from: {
+    id: string;
+    name: string;
+    emoji: string;
+  };
+  to: {
+    id: string;
+    name: string;
+    emoji: string;
+  };
+  message: string;
+  role?: 'user' | 'assistant';
+}
+
+export async function listCommunications(limit = 30): Promise<{ communications: Communication[] }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/communications?limit=${limit}`);
+    if (!res.ok) throw new Error('Failed to fetch communications');
+    return await res.json();
+  } catch (e) {
+    console.error('Error fetching communications:', e);
+    return { communications: [] };
+  }
+}

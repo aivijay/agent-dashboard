@@ -1,110 +1,93 @@
 import { useState, useEffect } from 'react';
+import { listCommunications, Communication } from '../services/api';
 
-export interface Communication {
-  id: string;
-  timestamp: string;
-  from: {
-    id: string;
-    name: string;
-    emoji: string;
-  };
-  to: {
-    id: string;
-    name: string;
-    emoji: string;
-  };
-  message: string;
+export interface CommWithTime extends Communication {
+  timeAgo: string;
+  formattedTime: string;
 }
 
-// Communication templates based on agent relationships
-const communicationTemplates = [
-  // Clawe (squad lead) communicating with team
-  { from: 'clawe', to: 'inky', message: 'Hey Inky, can you write the intro for our new blog post?' },
-  { from: 'clawe', to: 'pixel', message: 'We need a hero image for the blog. Can you create something with goats?' },
-  { from: 'clawe', to: 'scout', message: 'Scout, what keywords are trending for farm content?' },
-  { from: 'clawe', to: 'buddy', message: 'Hey Buddy! How about you check the workspace and let us know what you find?' },
-  
-  // Team responses to Clawe
-  { from: 'inky', to: 'clawe', message: 'Sure thing! I\'ll have a draft ready in a bit.' },
-  { from: 'pixel', to: 'clawe', message: 'On it! I\'ll make something warm and inviting. Farm vibes 🌾' },
-  { from: 'scout', to: 'clawe', message: 'Found some good keywords for the farm store page. Sending them over now.' },
-  { from: 'buddy', to: 'clawe', message: 'Hi Clawe! Is there anything I can help with? I\'m ready to explore! 🐐' },
-  
-  // Buddy being Buddy
-  { from: 'buddy', to: 'scout', message: 'Scout! Look what I found! It smells interesting! 🐐' },
-  { from: 'buddy', to: 'inky', message: 'Inky! Are you writing something cool? Can I help? 🐐' },
-  { from: 'buddy', to: 'pixel', message: 'Pixel! I found some pretty colors! Maybe for a picture?' },
-  
-  // Scout working with team
-  { from: 'scout', to: 'inky', message: 'Inky, I found great keywords for your article. Check them out!' },
-  { from: 'scout', to: 'pixel', message: 'Hey Pixel, make sure to add alt text with keywords to your images!' },
-  
-  // Pixel collaborating
-  { from: 'pixel', to: 'inky', message: 'Hey Inky, the blog post is ready. Let me know when you want the final copy!' },
-  { from: 'pixel', to: 'scout', message: 'Scout, I need some keywords for the image I\'m creating!' },
-];
-
-const AGENT_INFO: Record<string, { name: string; emoji: string }> = {
-  main: { name: 'Plop', emoji: '👋' },
-  clawe: { name: 'Clawe', emoji: '🦞' },
-  inky: { name: 'Inky', emoji: '✍️' },
-  pixel: { name: 'Pixel', emoji: '🎨' },
-  scout: { name: 'Scout', emoji: '🔍' },
-  buddy: { name: 'Buddy', emoji: '🐐' },
-};
-
-// Generate initial communications
-const generateInitialCommunications = (): Communication[] => {
-  const now = Date.now();
-  const shuffled = [...communicationTemplates].sort(() => Math.random() - 0.5);
-  
-  return shuffled.slice(0, 6).map((c, i) => ({
-    id: `init-${i}`,
-    timestamp: new Date(now - i * 90000 - Math.random() * 30000).toISOString(),
-    from: { id: c.from, ...AGENT_INFO[c.from] },
-    to: { id: c.to, ...AGENT_INFO[c.to] },
-    message: c.message,
-  })).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-};
-
 export function useCommunications() {
-  const [communications, setCommunications] = useState<Communication[]>(generateInitialCommunications);
-
-  // Function to add new communication from outside
-  const addCommunication = (comm: Communication) => {
-    setCommunications(prev => [comm, ...prev].slice(0, 30));
-  };
+  const [communications, setCommunications] = useState<CommWithTime[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    // Add new communication occasionally
-    const addComm = () => {
-      const template = communicationTemplates[Math.floor(Math.random() * communicationTemplates.length)];
-      
-      const newComm: Communication = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        timestamp: new Date().toISOString(),
-        from: { id: template.from, ...AGENT_INFO[template.from] },
-        to: { id: template.to, ...AGENT_INFO[template.to] },
-        message: template.message,
-      };
-      
-      setCommunications(prev => [newComm, ...prev].slice(0, 30));
-    };
-
-    const interval = setInterval(() => {
-      if (Math.random() > 0.5) { // 50% chance to add communication
-        addComm();
+    async function fetchCommunications() {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await listCommunications(30);
+        
+        // Format timestamps
+        const formatted: CommWithTime[] = data.communications.map(comm => {
+          const ts = typeof comm.timestamp === 'string' ? new Date(comm.timestamp).getTime() : comm.timestamp;
+          return {
+            ...comm,
+            timestamp: ts,
+            timeAgo: formatTimeAgo(ts),
+            formattedTime: formatTime(ts)
+          };
+        });
+        
+        setCommunications(formatted);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load communications');
+      } finally {
+        setLoading(false);
       }
-    }, 15000 + Math.random() * 10000);
+    }
 
+    fetchCommunications();
+    
+    // Refresh every 10 seconds
+    const interval = setInterval(fetchCommunications, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [refreshKey]);
 
-  return { communications, addCommunication };
+  const refresh = () => setRefreshKey(k => k + 1);
+
+  // Function to add new communication (for manual additions)
+  const addCommunication = (comm: Communication) => {
+    const now = Date.now();
+    const ts = typeof comm.timestamp === 'string' ? new Date(comm.timestamp).getTime() : (comm.timestamp || now);
+    const newComm: CommWithTime = {
+      ...comm,
+      timestamp: ts,
+      timeAgo: formatTimeAgo(ts),
+      formattedTime: formatTime(ts)
+    };
+    setCommunications(prev => [newComm, ...prev].slice(0, 30));
+  };
+
+  return { communications, loading, error, refresh, addCommunication };
+}
+
+function formatTimeAgo(timestamp: number): string {
+  const now = Date.now();
+  const diff = now - timestamp;
+  
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
+}
+
+function formatTime(timestamp: number): string {
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString('en-US', { 
+    hour: 'numeric', 
+    minute: '2-digit',
+    hour12: true 
+  });
 }
 
 interface CommunicationTimelineProps {
-  communications: Communication[];
+  communications: CommWithTime[];
 }
 
 export function CommunicationTimeline({ communications }: CommunicationTimelineProps) {
@@ -138,11 +121,7 @@ export function CommunicationTimeline({ communications }: CommunicationTimelineP
               </div>
               
               <div className="comm-time">
-                {new Date(comm.timestamp).toLocaleTimeString('en-US', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false,
-                })}
+                {comm.formattedTime}
               </div>
             </div>
           ))

@@ -36,7 +36,7 @@ export interface GatewayStatus {
 
 export interface Communication {
   id: string;
-  timestamp: string;
+  timestamp: string | number;
   from: {
     id: string;
     name: string;
@@ -48,4 +48,5 @@ export interface Communication {
     emoji: string;
   };
   message: string;
+  role?: 'user' | 'assistant';
 }
