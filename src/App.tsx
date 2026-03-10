@@ -1,23 +1,27 @@
+import { useState } from 'react';
 import { useAgents } from './hooks/useAgents';
 import { useActivity } from './hooks/useActivity';
 import { useCommunications } from './hooks/useCommunications';
 import { useToast } from './hooks/useToast';
 import { Header } from './components/Header';
 import { AgentGrid } from './components/AgentGrid';
+import { AgentArena } from './components/AgentArena';
 import { ActivityFeed } from './hooks/useActivity';
 import { CommunicationTimeline } from './hooks/useCommunications';
 import { QuickActions } from './components/QuickActions';
 import { ToastContainer } from './hooks/useToast';
 import { Agent, Communication } from './types';
 
+type View = 'dashboard' | 'arena';
+
 export default function App() {
+  const [view, setView] = useState<View>('dashboard');
   const { agents, connected, lastRefresh, refresh } = useAgents();
   const { events } = useActivity();
   const { communications, addCommunication } = useCommunications();
   const { toasts, addToast, removeToast } = useToast();
 
   const handleSendMessage = (agent: Agent, message: string) => {
-    // Add the outgoing message to communication feed
     const newComm: Communication = {
       id: Date.now().toString(),
       timestamp: Date.now(),
@@ -27,7 +31,6 @@ export default function App() {
     };
     addCommunication(newComm);
 
-    // Simulate agent response after a short delay
     setTimeout(() => {
       const responses = [
         "Got it! I'll work on that right away. 🦞",
@@ -48,7 +51,6 @@ export default function App() {
       };
       addCommunication(responseComm);
 
-      // Show toast for response
       addToast({
         message: responseMsg,
         type: 'info',
@@ -62,23 +64,31 @@ export default function App() {
       <Header 
         connected={connected} 
         lastRefresh={lastRefresh} 
-        onRefresh={refresh} 
+        onRefresh={refresh}
+        currentView={view}
+        onViewChange={setView}
       />
       
       <main className="main-content">
-        <AgentGrid agents={agents} />
-        
-        <div className="feeds-container">
-          <ActivityFeed events={events} />
-          <CommunicationTimeline communications={communications} />
-        </div>
+        {view === 'arena' ? (
+          <AgentArena />
+        ) : (
+          <>
+            <AgentGrid agents={agents} />
+            
+            <div className="feeds-container">
+              <ActivityFeed events={events} />
+              <CommunicationTimeline communications={communications} />
+            </div>
+          </>
+        )}
       </main>
 
       <QuickActions agents={agents} onSendMessage={handleSendMessage} />
       <ToastContainer toasts={toasts} onRemove={removeToast} />
 
       <footer className="footer">
-        <p>Squad Vision — Agent Dashboard v1.0</p>
+        <p>Squad Vision — Agent Dashboard v1.1</p>
       </footer>
     </div>
   );
