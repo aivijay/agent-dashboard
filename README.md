@@ -15,16 +15,38 @@ Then open http://localhost:5173 in your browser.
 
 ```
 agent-dashboard/
-├── SPEC.md              # Full specification
-├── README.md            # This file
-├── architecture/        # C4 diagrams (PlantUML .puml files)
-├── src/
-│   ├── components/      # React components
-│   ├── hooks/           # Custom React hooks
-│   ├── services/        # API client
-│   ├── types/           # TypeScript interfaces
-│   └── utils/           # Utility functions
-└── dist/                # Production build
+├── index.html             # Entry HTML
+├── package.json           # Dependencies and scripts
+├── tsconfig.json          # TypeScript config
+├── vite.config.ts         # Vite config
+├── start-api-dashboard.sh # Gateway + dashboard launcher
+├── SPEC.md                # Full specification
+├── README.md              # This file
+├── architecture/          # C4 diagrams (PlantUML .puml files)
+├── dist/                  # Production build
+└── src/
+    ├── App.tsx            # Root component
+    ├── main.tsx           # Entry point
+    ├── index.css          # Global styles
+    ├── components/        # React components
+    │   ├── AgentArena.tsx
+    │   ├── AgentCard.tsx
+    │   ├── AgentGrid.tsx
+    │   ├── AgentVisualCard.tsx
+    │   ├── Header.tsx
+    │   ├── QuickActions.tsx
+    │   └── StatusBadge.tsx
+    ├── hooks/             # Custom React hooks
+    │   ├── useActivity.tsx
+    │   ├── useAgents.ts
+    │   ├── useCommunications.tsx
+    │   └── useToast.tsx
+    ├── services/          # API client
+    │   └── api.ts
+    ├── types/             # TypeScript interfaces
+    │   └── index.ts
+    └── utils/             # Utility functions
+        └── formatters.ts
 ```
 
 ## Architecture Diagrams
