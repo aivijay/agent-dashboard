@@ -5,7 +5,7 @@ A real-time dashboard to monitor Vijay's agent squad (Plop, Clawe, Inky, Pixel, 
 ## Quick Start
 
 ```bash
-cd ~/workspace/agent-dashboard-app
+cd agent-dashboard
 npm run dev
 ```
 
@@ -14,7 +14,7 @@ Then open http://localhost:5173 in your browser.
 ## Project Structure
 
 ```
-agent-dashboard-app/
+agent-dashboard/
 ├── SPEC.md              # Full specification
 ├── README.md            # This file
 ├── architecture/        # C4 diagrams (PlantUML .puml files)
